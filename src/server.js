@@ -5,16 +5,21 @@ const path = require("path");
 
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
-const authRoutes = require("./routes/authRoutes");
-const staffRoutes = require("./routes/staffRoutes");
-const diamondRoutes = require("./routes/diamondRoutes");
-const customerRoutes = require("./routes/customerRoutes");
-const memoRoutes = require("./routes/memoRoutes");
-const invoiceRoutes = require("./routes/invoiceRoutes");
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 const CLIENT_URL = process.env.CLIENT_URL || "*";
+
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught exception during startup/runtime");
+  console.error(error?.stack || error);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled promise rejection during startup/runtime");
+  console.error(reason?.stack || reason);
+  process.exit(1);
+});
 
 app.use(cors({ origin: CLIENT_URL === "*" ? "*" : [CLIENT_URL] }));
 app.use(express.json());
@@ -37,6 +42,20 @@ app.use((err, req, res, next) => {
 
 async function startServer() {
   try {
+    const authRoutes = require("./routes/authRoutes");
+    const staffRoutes = require("./routes/staffRoutes");
+    const diamondRoutes = require("./routes/diamondRoutes");
+    const customerRoutes = require("./routes/customerRoutes");
+    const memoRoutes = require("./routes/memoRoutes");
+    const invoiceRoutes = require("./routes/invoiceRoutes");
+
+    app.use("/api/auth", authRoutes);
+    app.use("/api/staff", staffRoutes);
+    app.use("/api/diamonds", diamondRoutes);
+    app.use("/api/customers", customerRoutes);
+    app.use("/api/memos", memoRoutes);
+    app.use("/api/invoices", invoiceRoutes);
+
     const { supabase } = require("./lib/supabase");
     const { error } = await supabase.from("users").select("id").limit(1);
     if (error) {
