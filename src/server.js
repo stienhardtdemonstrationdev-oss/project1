@@ -1,0 +1,56 @@
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const path = require("path");
+
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
+const { supabase } = require("./lib/supabase");
+const authRoutes = require("./routes/authRoutes");
+const staffRoutes = require("./routes/staffRoutes");
+const diamondRoutes = require("./routes/diamondRoutes");
+const customerRoutes = require("./routes/customerRoutes");
+const memoRoutes = require("./routes/memoRoutes");
+const invoiceRoutes = require("./routes/invoiceRoutes");
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+const CLIENT_URL = process.env.CLIENT_URL || "*";
+
+app.use(cors({ origin: CLIENT_URL === "*" ? "*" : [CLIENT_URL] }));
+app.use(express.json());
+
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true, service: "diamond-inventory-backend" });
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/staff", staffRoutes);
+app.use("/api/diamonds", diamondRoutes);
+app.use("/api/customers", customerRoutes);
+app.use("/api/memos", memoRoutes);
+app.use("/api/invoices", invoiceRoutes);
+
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ message: "Internal server error" });
+});
+
+async function startServer() {
+  try {
+    const { error } = await supabase.from("users").select("id").limit(1);
+    if (error) {
+      throw error;
+    }
+    console.log("Supabase connected");
+  } catch (error) {
+    console.error("Supabase connection failed:", error.message);
+    process.exit(1);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Backend running on port ${PORT}`);
+  });
+}
+
+startServer();
