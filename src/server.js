@@ -28,13 +28,6 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "diamond-inventory-backend" });
 });
 
-app.use("/api/auth", authRoutes);
-app.use("/api/staff", staffRoutes);
-app.use("/api/diamonds", diamondRoutes);
-app.use("/api/customers", customerRoutes);
-app.use("/api/memos", memoRoutes);
-app.use("/api/invoices", invoiceRoutes);
-
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
   res.status(500).json({ message: "Internal server error" });
