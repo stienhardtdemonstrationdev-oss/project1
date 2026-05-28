@@ -5,7 +5,6 @@ const path = require("path");
 
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
-const { supabase } = require("./lib/supabase");
 const authRoutes = require("./routes/authRoutes");
 const staffRoutes = require("./routes/staffRoutes");
 const diamondRoutes = require("./routes/diamondRoutes");
@@ -38,13 +37,19 @@ app.use((err, req, res, next) => {
 
 async function startServer() {
   try {
+    const { supabase } = require("./lib/supabase");
     const { error } = await supabase.from("users").select("id").limit(1);
     if (error) {
       throw error;
     }
     console.log("Supabase connected");
   } catch (error) {
-    console.error("Supabase connection failed:", error.message);
+    console.error("Startup failed while connecting to Supabase");
+    console.error("Error message:", error?.message || "Unknown error");
+    if (error?.details) console.error("Error details:", error.details);
+    if (error?.hint) console.error("Error hint:", error.hint);
+    if (error?.code) console.error("Error code:", error.code);
+    if (error?.stack) console.error("Stack:", error.stack);
     process.exit(1);
   }
 
