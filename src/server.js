@@ -60,9 +60,12 @@ async function startServer() {
     console.log("Startup step 5: testing Supabase query");
     const { error } = await supabase.from("users").select("id").limit(1);
     if (error) {
-      throw error;
+      console.error("Supabase test query failed during startup");
+      console.error("Supabase error object:", JSON.stringify(error, null, 2));
+      console.error("Server will continue to start; check Supabase schema/credentials.");
+    } else {
+      console.log("Supabase connected");
     }
-    console.log("Supabase connected");
   } catch (error) {
     console.error("Startup failed");
     console.error("Error message:", error?.message || "Unknown error");
